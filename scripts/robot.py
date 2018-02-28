@@ -12,7 +12,7 @@ from time import sleep
 WHEEL_RADIUS = 5   #cm
 BOT_RADIUS = 13.5  #cm
 MIN_VEL = 30
-MIN_VEL_GTG = 85
+MIN_VEL_GTG = 90
 bot_1=0001
 MAX_WH_VEL = 11
 #ser = serial.Serial('/dev/ttyUSB0',115200)

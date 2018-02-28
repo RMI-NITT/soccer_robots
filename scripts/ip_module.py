@@ -21,7 +21,7 @@ MAT = np.array((mat_size_1, mat_size_2), dtype=np.uint64)
 class IP(object):
 
     def __init__(self):
-        self.cap = cv2.VideoCapture(0)
+        self.cap = cv2.VideoCapture(1)
         self.cap.set(3,FULL_WIDTH) #3 - WIDTH
         self.cap.set(4,FULL_HEIGHT)  #4 - HEIGHT
 
@@ -245,9 +245,9 @@ class Ball(detectRobot):
             dest_y = self.cy + time_to_line*self.vy_pixel
             if dest_y < 0 or dest_y > FINAL_WIDTH:
                 return -1
-            cv2.circle(image,(int(self.sides[self.dir][0][0]),int(dest_y)), 5, (0,0,255), -1)
+            # cv2.circle(image,(int(self.sides[self.dir][0][0]),int(dest_y)), 5, (0,0,255), -1) 
             self.destination = self.sides[self.dir][0][0],dest_y
-            cv2.putText(image,str(self.destination),(int(self.destination[0]),int(self.destination[1])), self.font, 0.5,(255,255,0),2,cv2.LINE_AA)
+            # cv2.putText(image,str(self.destination),(int(self.destination[0]),int(self.destination[1])), self.font, 0.5,(255,255,0),2,cv2.LINE_AA)
         return self.destination
 
     def abs_vel(self):

@@ -106,7 +106,7 @@ if __name__=="__main__":
                         print "count = ", count
                         if count == 3:
                             bot3_x, bot3_y = centroid[0]/end_x, centroid[1]/end_y
-                            print "BOT 3 grid point " , bot3_y , bot3_x
+                            # print "BOT 3 grid point " , bot3_y , bot3_x
                             mat[int(bot3_y)][int(bot3_x)]=2
                             #print "start assigned"
                             ball_object.update_bot_state(centroid[0],centroid[1])
@@ -156,7 +156,7 @@ if __name__=="__main__":
                 print i,area
                 if area > 5: # previously : area > 60
                     found_ball = 1
-                    print "found_ball = 1"
+                    # print "found_ball = 1"
                     centroid_ball = ball_object.get_center(contours_ball[i])
                     x_grid_num_ball, y_grid_num_ball = int(centroid_ball[0]/end_x), int(centroid_ball[1]/end_y)
 
@@ -170,8 +170,8 @@ if __name__=="__main__":
                         break
                     ball_object.update_state(centroid_ball[0],centroid_ball[1])
                     #print (ball_object.cx,ball_object.cy),ball_object.get_velocity()
-                    if ball_object.abs_vel() > 10:
-                        ball_object.draw_arrow(image)
+                    # if ball_object.abs_vel() > 10:
+                    #     ball_object.draw_arrow(image)
 
                     # imaginary lines
                 # ball_object.prediction_lines(image)
@@ -185,7 +185,7 @@ if __name__=="__main__":
                 ball_state_publisher.publish(ball_msg)
 
                 msg = ball_predict()
-                    # print ball_object.get_prediction(image)
+                # print ball_object.get_prediction(image)
                 destination = ball_object.get_prediction(image)
                 #print destination
                 if destination == -1:
@@ -213,7 +213,7 @@ if __name__=="__main__":
                 #    previous_mat=mat
                     #print "route length = ", route_length
                 path = np.asarray(route_path)
-                print "route path   = ", route_path
+                # print "route path   = ", route_path
                 path_y = np.ndarray.tolist(path[:,0])
                 path_x = np.ndarray.tolist(path[:,1])
                 route_msg = route()
@@ -232,7 +232,7 @@ if __name__=="__main__":
 
     	    mat=np.zeros((mat_size_1, mat_size_2), dtype=np.uint64)
 
-            print y_grid_num_ball,x_grid_num_ball
+            # print y_grid_num_ball,x_grid_num_ball
 
             if not ball_object.display_image(image):
                 flag = 1

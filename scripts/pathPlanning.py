@@ -66,7 +66,7 @@ class Astar(object):
                     self.start = self.cell(i, j)
                 if(grid[i][j] == 3):
                     self.end = self.cell(i, j)
-	print "initialised"
+	# print "initialised"
 
     def cell(self, x, y):
         # returns the location to identify each cell
