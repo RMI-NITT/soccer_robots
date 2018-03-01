@@ -147,14 +147,14 @@ if __name__=="__main__":
     	    #traj_time, traj_x, traj_y, traj_x_dot, traj_y_dot = pathPlanning.curve_fit(np.asarray(route_path))
             #pathPlanning.curve_fit(np.asarray(route_path))
             #Robot.kinematic_model()
-    	    hsv_image = ball_object.rgb2hsv(image)
+            hsv_image = ball_object.rgb2hsv(image)
             mask_ball = ball_object.get_hsv_mask(hsv_image,ball_object.lower_ball,ball_object.upper_ball)
             contours_ball,hierarchy = ball_object.find_contours(mask_ball)
 
             for i in range(len(contours_ball)):
                 area = ball_object.find_area(contours_ball[i])
                 print i,area
-                if area > 5: # previously : area > 60
+                if area > 1.0: # previously : area > 60
                     found_ball = 1
                     # print "found_ball = 1"
                     centroid_ball = ball_object.get_center(contours_ball[i])
@@ -205,7 +205,7 @@ if __name__=="__main__":
                 ball_prediction_publisher.publish(msg)
                 rospy.loginfo(msg)
 
-            #if mat[goal_x][goal_y] != 2:
+            # if mat[goal_x][goal_y] != 2:
 
             if mat[y_grid_num_ball][x_grid_num_ball] != 2 :
                 mat[y_grid_num_ball][x_grid_num_ball] = 3 #goal position

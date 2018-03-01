@@ -28,7 +28,7 @@ def traj_gen(path_x,path_y):
     # print "traj gen"
     #print "at path"
     #print "path_x : ",path_x, "path_y : ", path_y
-    kp_x = 0.0006;     kp_y = 0.00029  ;     kp_theta = 0.3  #kp_x = 1.0;     kp_y = 1.7;     kp_theta = 0.30 ||| kp_x = 0.04 kp_y = 0.05
+    kp_x = 0.0006;     kp_y = 0.00029  ;     kp_theta = 1  #kp_x = 1.0;     kp_y = 1.7;     kp_theta = 0.30 ||| kp_x = 0.04 kp_y = 0.05
     kd_x = 0.00;   kd_y = 0.00;     kd_theta = 0
     ki_x = 0.000; ki_y = 0.000; ki_theta = 0.0 #ki_x = 0.00020 ki_y = 0.00020
     # kp_x = 0.000;     kp_y = 0.000;     kp_theta = 0.0  #kp_x = 1.0;     kp_y = 1.7;     kp_theta = 0.30 ||| kp_x = 0.04 kp_y = 0.05
@@ -46,9 +46,17 @@ def traj_gen(path_x,path_y):
             #print "call:", call
 
     time, x, y, x_dot, y_dot = pathPlanning.curve_fit((np.asarray(path_x)),(np.asarray(path_y)))
-    destination_theta = math.atan2(y[-1]*end_y-bot3.state[1],x[-1]*end_x-bot3.state[0])*180/math.pi
-    print "y[-1]*end_y : ",y[-1]*end_y , "x[-1]*end_x : ",x[-1]*end_x
-    print "bot3.state[1] : ",bot3.state[1] , bot3.state[0] 
+    destination_theta = -math.atan2( bot3.state[1] - y[-1]*end_y,bot3.state[0]- x[-1]*end_x)*180/math.pi
+    if x[-1] > 10 :
+        error_x_pixel = 40
+        error_y_pixel = 40
+    else :
+        error_x_pixel = 90
+        error_y_pixel = 90
+
+    error_theta = math.atan2(math.sin(math.pi*(bot3.state[2]-destination_theta)/180),math.cos(math.pi*(bot3.state[2]-destination_theta)/180))
+    # print "y[-1]*end_y : ",y[-1]*end_y , "x[-1]*end_x : ",x[-1]*end_x
+    # print "bot3.state[1] : ",bot3.state[1] , bot3.state[0]
     print "destination_theta" , destination_theta
     # print "X: ", x
     #print "traj received"
@@ -71,14 +79,14 @@ def traj_gen(path_x,path_y):
     # y_dot[len(x_dot)-1] = y_dot[len(x_dot)-2]
     # x_dot[0] = x_dot[1]
     # y_dot[0] = y_dot[1]
-    num_points = 7
+    num_points = 6
 
-    if len(x) <= 7 :
+    if len(x) <= 6 :
         num_points = len(x) - 1
 
     for i in range(num_points):
-
-        if abs(path_y[-1]*end_y - bot3.state[1])<55 and abs(path_x[-1]*end_x - bot3.state[0])<55 and call == 0:
+        # print (abs(error_theta) < 20)
+        if abs(path_y[-1]*end_y - bot3.state[1])<error_y_pixel and abs(path_x[-1]*end_x - bot3.state[0])<error_x_pixel and abs(error_theta) < 0.1 and call == 0:
             bot3.kinematic_model(0, 0)
             # print "final grid point (x,y) : ",bot3.state[1]/end_y,bot3.state[0]/end_x
             call = 1
@@ -113,8 +121,9 @@ def traj_gen(path_x,path_y):
             break
 
         elif call == 0 :
-            # print "Y error",(path_y[-1]*end_y - bot3.state[1])
-            # print "X error",(path_x[-1]*end_x - bot3.state[0])
+            print "Y error",(path_y[-1]*end_y - bot3.state[1])
+            print "X error",(path_x[-1]*end_x - bot3.state[0])
+            error_theta = math.atan2(math.sin(math.pi*(bot3.state[2]-destination_theta)/180),math.cos(math.pi*(bot3.state[2]-destination_theta)/180))
             actual_traj_x.append(bot3.state[0])
             actual_traj_y.append(bot3.state[1])
             gen_traj_x.append(x[i]*end_x)
@@ -124,15 +133,14 @@ def traj_gen(path_x,path_y):
             y_actual[i] = bot3.state[1]
             error_x = float(x[i]*end_x - bot3.state[0])#end_x and end_y are multiplied to find the coordinate wrt the image. x,y give the grid coordinates
             error_y = float(y[i]*end_y - bot3.state[1])
-            print "destination_theta : ",destination_theta
-            print "bot3.state[2] : ",bot3.state[2]
-            error_theta = math.atan2(math.sin(math.pi*(destination_theta-bot3.state[2])/180),math.cos(math.pi*(destination_theta-bot3.state[2])/180))
+            print "destination_theta : ",destination_theta,"bot3.state[2] : ",bot3.state[2], "theta error ",error_theta
+
             if i==0 :
                 error_x = 0
                 error_y = 0
                 error_theta = 0
             #print "x", y[i]*end_x, "bot_x:", bot3.state[0], "y:", x[i]*end_y, "bot_y:", bot3.state[1]
-            print "error_x:", error_x, "error_y:", error_y, "error_theta : ", error_theta
+            # print "error_x:", error_x, "error_y:", error_y, "error_theta : ", error_theta
             # print "x_dot:", x_dot[i], "y_dot:", y_dot[i]
             x_dot[i] = x_dot[i] + kp_x*error_x + kd_x*(error_x-old_error_x) + ki_x*sum_x
             y_dot[i] = y_dot[i] + kp_y*error_y + kd_y*(error_y-old_error_y) + ki_y*sum_y
@@ -141,7 +149,7 @@ def traj_gen(path_x,path_y):
             # x_dot[i] = 0
             # y_dot[i] = 20
 
-            # bot3.kinematic_model(x_dot[i], y_dot[i] , theta_dot)
+            bot3.kinematic_model(x_dot[i], y_dot[i] , theta_dot)
 
             # if x_dot[i] >= 3:
             #     x_dot[i] = 3

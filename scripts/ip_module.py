@@ -11,17 +11,17 @@ FULL_HEIGHT = 1080
 FINAL_WIDTH  = 1100
 FINAL_HEIGHT = 620
 
-LEFT_TOP = [175,26]
-RIGHT_TOP = [1775,12]
-RIGHT_BOTTOM = [1800,940]
-LEFT_BOTTOM = [220,1030]
+LEFT_TOP = [165,5]#[148,12]
+RIGHT_TOP = [1800,13]#[1571,22]
+RIGHT_BOTTOM = [1815,960]#[1583,830]
+LEFT_BOTTOM = [200,1037]#[171,900]
 mat_size_1 = 14
 mat_size_2 = 21
 MAT = np.array((mat_size_1, mat_size_2), dtype=np.uint64)
 class IP(object):
 
     def __init__(self):
-        self.cap = cv2.VideoCapture(1)
+        self.cap = cv2.VideoCapture(0)
         self.cap.set(3,FULL_WIDTH) #3 - WIDTH
         self.cap.set(4,FULL_HEIGHT)  #4 - HEIGHT
 
@@ -181,8 +181,8 @@ class Ball(detectRobot):
         self.fps = 28
         #self.update_fps(60)
 
-        self.lower_ball = np.array([23,52,230])
-        self.upper_ball = np.array([40,120,260])
+        self.lower_ball = np.array([20,52,230])
+        self.upper_ball = np.array([40,180,256])
 
         self.vx_pixel = 0;  self.vy_pixel = 0
 
@@ -245,7 +245,7 @@ class Ball(detectRobot):
             dest_y = self.cy + time_to_line*self.vy_pixel
             if dest_y < 0 or dest_y > FINAL_WIDTH:
                 return -1
-            # cv2.circle(image,(int(self.sides[self.dir][0][0]),int(dest_y)), 5, (0,0,255), -1) 
+            # cv2.circle(image,(int(self.sides[self.dir][0][0]),int(dest_y)), 5, (0,0,255), -1)
             self.destination = self.sides[self.dir][0][0],dest_y
             # cv2.putText(image,str(self.destination),(int(self.destination[0]),int(self.destination[1])), self.font, 0.5,(255,255,0),2,cv2.LINE_AA)
         return self.destination

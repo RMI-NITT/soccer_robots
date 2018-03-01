@@ -14,7 +14,7 @@ BOT_RADIUS = 13.5  #cm
 MIN_VEL = 30
 MIN_VEL_GTG = 90
 bot_1=0001
-MAX_WH_VEL = 11
+MAX_WH_VEL = 14
 #ser = serial.Serial('/dev/ttyUSB0',115200)
 #x_dot robot moves up
 #y_dot robot moves left
