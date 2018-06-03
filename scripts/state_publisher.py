@@ -21,13 +21,13 @@ if __name__=="__main__":
     try:
 
 
-        ball_object = ip_module.Ball()
-        Robot = robot.robot()
+        ball_object = ip_module.Ball()      # ip_module object, used for IP function for locating ball and the robot 
+        Robot = robot.robot()               # robot object. For control of the robot
         flag = 0    #why?
-        bot3_x = 1 #why?
-        bot3_y = 1
-        goal_y = int(raw_input("goal_y:"))
-        goal_x = int(raw_input("goal_x:"))
+        bot3_x = 1                          # Coordinates of the robot in the grid
+        bot3_y = 1                          # Coordinates of the robot in the grid
+        goal_y = int(raw_input("goal_y:"))  # Coordinates of the default goal location when there is no ball in arena. ...
+        goal_x = int(raw_input("goal_x:"))  # ... the input is ignored when the ball is in play, ball location is used instead.
         found_ball = 0
         state_publisher = rospy.Publisher('bot_states',bot_state,queue_size=1)
         ball_state_publisher = rospy.Publisher('ball_state',ball,queue_size=1)
@@ -35,10 +35,10 @@ if __name__=="__main__":
         route_path_publisher = rospy.Publisher('path', route,queue_size=1)
         rospy.init_node('state_publisher',anonymous=True)
         rate = rospy.Rate(ball_object.fps)
-        centroid = (0,0)
-        centroid_small = (0,0)
+        centroid = (0,0)                    # center of the robot
+        centroid_small = (0,0)              # center of the ball
 
-        mat = np.zeros((mat_size_1, mat_size_2), dtype=np.uint64)
+        mat = np.zeros((mat_size_1, mat_size_2), dtype=np.uint64)           # matrix representing the arena
         previous_mat = np.zeros((mat_size_1, mat_size_2), dtype=np.uint64)
         MAT = np.zeros((mat_size_1, mat_size_2), dtype=np.uint64)
 
@@ -54,7 +54,7 @@ if __name__=="__main__":
             start_y = 0
             end_x = X/mat_size_2
             end_y = Y/mat_size_1
-            if found_ball == 0 :
+            if found_ball == 0 :            # if ball not found, use default input goal locations
                 x_grid_num_ball = goal_x
                 y_grid_num_ball = goal_y
             #im2 = ball_object.draw_grid(im2)
@@ -72,12 +72,12 @@ if __name__=="__main__":
                 area = ball_object.find_area(contours[i])
                 #print i,area
 
-                if area > 3300 and area < 5200:
+                if area > 3300 and area < 5200:                     # area = (area of the circular tag on top of the robot)
                     centroid = ball_object.get_center(contours[i])
 
                     x_grid_num_bot, y_grid_num_bot = centroid[0]/end_x, centroid[1]/end_y
 
-                    if centroid != -1:
+                    if centroid != -1:                              
 
                         _,thresh = ball_object.threshold_image(imageGray,245,255) #value 245 was 220
                         cropped_image = ball_object.crop_image(thresh, centroid, 40)
@@ -98,24 +98,28 @@ if __name__=="__main__":
                             #if area_small > 100 and area < 600:
                             #print "area_small:", area_small
                             if cropped_hierarchy[0][j][2] == -1 and cropped_hierarchy[0][j][3] != -1:
+                                # count is the number of smaller circles on top of the robot. It is used to distinguish between different robots
                                 count += 1
 
-                                if area_small > 200 and area_small < 600:
+
+                                if area_small > 200 and area_small < 600:       # area of smaller circles on the tag of the robot
                                     centroid_small = ball_object.get_center(cropped_contours[j])
 
                         print "count = ", count
-                        if count == 3:
+                        if count == 3: 
                             bot3_x, bot3_y = centroid[0]/end_x, centroid[1]/end_y
                             # print "BOT 3 grid point " , bot3_y , bot3_x
-                            mat[int(bot3_y)][int(bot3_x)]=2
+
+                            mat[int(bot3_y)][int(bot3_x)]=2     # location of the robot is the start location for A* and is updated as 2 in the matrix
+
                             #print "start assigned"
                             ball_object.update_bot_state(centroid[0],centroid[1])
                             #print "bot velocity from frame = ", ball_object.get_velocity_bot()
 
                         else :
                             #print "b4 MAT" , count
-                            im2,MAT = ball_object.draw_grid(im2,int(x_grid_num_bot),int(y_grid_num_bot))
-
+                            im2,MAT = ball_object.draw_grid(im2,int(x_grid_num_bot),int(y_grid_num_bot)) # MAT is the new matrix updated for new every robot
+                                                                                                         # mat is the final matrix.
                         yaw_angle = ball_object.get_yaw_angle(40,40,centroid_small[0],centroid_small[1])
                         #print "State: ", centroid[0],centroid[1],yaw_angle
                         # print "Count: ",count
@@ -131,6 +135,7 @@ if __name__=="__main__":
  		#for i in range(12):
 		#	mat.append(row)
 
+                    # mat is updated using MAT
                     for i in range(mat_size_1):
                         for j in range(mat_size_2):
                             if mat[i][j] != 2 and mat[i][j] != 3:
@@ -147,6 +152,11 @@ if __name__=="__main__":
     	    #traj_time, traj_x, traj_y, traj_x_dot, traj_y_dot = pathPlanning.curve_fit(np.asarray(route_path))
             #pathPlanning.curve_fit(np.asarray(route_path))
             #Robot.kinematic_model()
+
+            """
+            Below code if for locating the ball
+            """
+
             hsv_image = ball_object.rgb2hsv(image)
             mask_ball = ball_object.get_hsv_mask(hsv_image,ball_object.lower_ball,ball_object.upper_ball)
             contours_ball,hierarchy = ball_object.find_contours(mask_ball)
@@ -154,7 +164,7 @@ if __name__=="__main__":
             for i in range(len(contours_ball)):
                 area = ball_object.find_area(contours_ball[i])
                 print i,area
-                if area > 1.0: # previously : area > 60
+                if area > 1.0: # previously : area > 60  
                     found_ball = 1
                     # print "found_ball = 1"
                     centroid_ball = ball_object.get_center(contours_ball[i])
@@ -207,6 +217,13 @@ if __name__=="__main__":
 
             # if mat[goal_x][goal_y] != 2:
 
+            """ 
+            Below code if for path planning
+
+            Trajectory generation and Control are done in trajectory_track.py
+
+            """
+
             if mat[y_grid_num_ball][x_grid_num_ball] != 2 :
                 mat[y_grid_num_ball][x_grid_num_ball] = 3 #goal position
                 route_length, route_path = pathPlanning.play(mat)
@@ -230,7 +247,7 @@ if __name__=="__main__":
                 print s
 
 
-    	    mat=np.zeros((mat_size_1, mat_size_2), dtype=np.uint64)
+    	    mat=np.zeros((mat_size_1, mat_size_2), dtype=np.uint64)    #mat is made zero, to account for movement of obstacles, ball and the robot.
 
             # print y_grid_num_ball,x_grid_num_ball
 

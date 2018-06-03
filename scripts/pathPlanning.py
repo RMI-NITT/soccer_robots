@@ -161,25 +161,14 @@ def play(grid):
 
 def curve_fit(x,y):
 
-	# get x and y vectors
-    #x = points[:,0]
-    #y = points[:,1]
-
-	# calculate polynomial
-	#z = np.polyfit(x, y, 5)
-	#print "z:", z
-	#f = np.poly1d(z)
-
-	# calculate new x's and y's
-	#x_new = np.linspace(x[0], x[-1], 50)
-	#y_new = f(x_new)
+	
     time_x=np.zeros(len(x))
-    time_x[0] = (0.5/8)
+    time_x[0] = (0.5/8)         # trial and error
     for i in range(1, len(x)):
         time_x[i] = time_x[i-1] + (0.5/8) # found this suitable after trial and error
 
-    order = 4 #len(x) - 3
-    time_x_new = np.linspace(time_x[0], time_x[-1], 3*len(x))
+    order = 4 #len(x) - 3   # trial and error
+    time_x_new = np.linspace(time_x[0], time_x[-1], 3*len(x)) # to obtain a smoother curve, it is done by increasing the number of points
 
 
 
@@ -215,12 +204,3 @@ def curve_fit(x,y):
 
     return time_x_new, new_x, new_y, new_x_dot, new_y_dot
 
-    # print "velocity:", new_x_dot
-    # x_dot = func_x.diff
-    #plt.plot(time_x_new, new_x, 'o')#, time_x_new, new_x, time_x_new, new_x_dot, 'x')
-    # plt.xlim([time_x[0]-1, time_x[-1] + 1 ])
-    # plt.ylim([0, 15 ])
-    #plt.show()
-	# plt.plot(x,y,'o', x_new, y_new)
-	# plt.xlim([x[0]-1, x[-1] + 1 ])
-	# plt.show()

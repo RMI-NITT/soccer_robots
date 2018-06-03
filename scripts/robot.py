@@ -34,35 +34,36 @@ class robot:
     #Returns 1 if success else returns 0
 
     def send(self,message):
-	'''
-	#ser.write(message)
-	#print "done \n"
-	print "I'm here"
+        xbee = XBee.XBee("/dev/ttyACM0",115200)
+        #print "b4 send"
+        sleep(0.25)
+        xbee.SendStr(message,0x0001)
+        # Your serial port name here
+        #xbee.SendStr(message,0x0002)
+    '''
+    #ser.write(message)
+    #print "done \n"
+    print "I'm here"
         self.sock = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
         self.sock.connect((self.tcp_ip, self.tcp_port))
-	print "b4"
+    print "b4"
         self.sock.send(message)
         data = self.sock.recv(self.buffer_size)
         self.sock.close()
-	print "after"
+    print "after"
         if(data != 'H'):
            print "Error: Incorrect acknowledgement from robot ",self.bot_number
            return 0
         else:
-	   print "ack "
+       print "ack "
            return 1
-	'''
-	  # Your serial port name here
-        xbee = XBee.XBee("/dev/ttyACM0",115200)
-	#print "b4 send"
-        xbee.SendStr(message,0x0001)
-        sleep(0.25)
-        #xbee.SendStr(message,0x0002)
+    '''
 	#print "after"
 
     #Finds wheel velocities for given (v_x,v_y,w)
     #Returns 1 if data is sent to robot else returns 0
     '''
+    
     def move(self,x_dot,y_dot,w,solenoid,dribbler):
         # print "velocities:",(x_dot,y_dot,w)
         vel_w_1 = ((-1*math.sin((30+self.state[2])*math.pi/180)*x_dot) + math.cos((30+self.state[2])*math.pi/180)*y_dot + self.bot_radius*w)/self.wheel_radius;
@@ -121,6 +122,11 @@ class robot:
         #print "State : " , self.state
 #Maxvelocity = 44cm/s
 #MaxValue = 8.5
+    
+    '''
+    function for obtaining the 3 wheel velocities based on the x_dot and y_dot values
+
+    '''
     def kinematic_model(self,x_dot=20, y_dot=0, w=0,solenoid=0,dribbler=0):
         #print "kinematic model called:", x_dot, y_dot, w
         #print "pose angle:", self.state[2]
@@ -131,11 +137,11 @@ class robot:
         print "Velocity_wheels b4 scaling  :",vel_w_1,vel_w_2,vel_w_3
 
         if(vel_w_1>0.001):
-            vel_w_1 = (vel_w_1/MAX_WH_VEL)*(255 - MIN_VEL_GTG) + MIN_VEL_GTG  # changed factor from 8.5 to 125 (due to increase in max(x_dot),max(y_dot) after including Kp)
-        elif(vel_w_1<-0.001):
-            vel_w_1 = (vel_w_1/MAX_WH_VEL)*(255 - MIN_VEL_GTG) - MIN_VEL_GTG
-        if(vel_w_2>0.001):
-            vel_w_2 = (vel_w_2/MAX_WH_VEL)*(255 - MIN_VEL_GTG) + MIN_VEL_GTG
+            vel_w_1 = (vel_w_1/MAX_WH_VEL)*(255 - MIN_VEL_GTG) + MIN_VEL_GTG    # for linear transformation of the wheel velocities using line equations
+        elif(vel_w_1<-0.001):                                                   # like y=mx+c, for converting vel. between 0 to 14 TO vel. = 90 to 255.
+            vel_w_1 = (vel_w_1/MAX_WH_VEL)*(255 - MIN_VEL_GTG) - MIN_VEL_GTG    # min wheel vel. = 90, bot moves only if PWM value is >= 90
+        if(vel_w_2>0.001):              
+            vel_w_2 = (vel_w_2/MAX_WH_VEL)*(255 - MIN_VEL_GTG) + MIN_VEL_GTG    # changed factor from 8.5 to 125 (due to increase in max(x_dot),max(y_dot) after including Kp)
         elif(vel_w_2<-0.001):
             vel_w_2 = (vel_w_2/MAX_WH_VEL)*(255 - MIN_VEL_GTG) - MIN_VEL_GTG
         if(vel_w_3>0.001):
@@ -147,9 +153,9 @@ class robot:
         max_val = max(abs(vel_w_1),abs(vel_w_2),abs(vel_w_3))
         #print max_val
 
-        if(max_val>255):
+        if(max_val>255):                                                        # for proportionally reducing the vel. on all 3 wheels when it overflows
             if(vel_w_1>0.001):
-                vel_w_1 = (vel_w_1/max_val)*(255 - MIN_VEL_GTG) + MIN_VEL_GTG
+                vel_w_1 = (vel_w_1/max_val)*(255 - MIN_VEL_GTG) + MIN_VEL_GTG   
             elif(vel_w_1<-0.001):
                 vel_w_1 = (vel_w_1/max_val)*(255 - MIN_VEL_GTG) - MIN_VEL_GTG
             if(vel_w_2>0.001):

@@ -45,9 +45,13 @@ def traj_gen(path_x,path_y):
     #    call = 1
             #print "call:", call
 
+    '''
+    Curve fitting is done to get a smooth path from the discrete path obtained using A*
+    x, y are the x and y coordinates wrt time. x_dot, y_dot obtained by differentiating x and y
+    '''
     time, x, y, x_dot, y_dot = pathPlanning.curve_fit((np.asarray(path_x)),(np.asarray(path_y)))
     destination_theta = -math.atan2( bot3.state[1] - y[-1]*end_y,bot3.state[0]- x[-1]*end_x)*180/math.pi
-    if x[-1] > 10 :
+    if x[-1] > 10 :         # to account for the tilt in the camera
         error_x_pixel = 40
         error_y_pixel = 40
     else :
@@ -79,15 +83,19 @@ def traj_gen(path_x,path_y):
     # y_dot[len(x_dot)-1] = y_dot[len(x_dot)-2]
     # x_dot[0] = x_dot[1]
     # y_dot[0] = y_dot[1]
-    num_points = 6
+
+    num_points = 6 # number of velocity commands that will be sent to the robot. After using up num_points values, we again generate trajectory from the new path
 
     if len(x) <= 6 :
-        num_points = len(x) - 1
+        num_points = len(x) - 1 #by trial and error
 
     for i in range(num_points):
         # print (abs(error_theta) < 20)
+        '''
+        Condition to check if goal location is reached
+        '''
         if abs(path_y[-1]*end_y - bot3.state[1])<error_y_pixel and abs(path_x[-1]*end_x - bot3.state[0])<error_x_pixel and abs(error_theta) < 0.1 and call == 0:
-            bot3.kinematic_model(0, 0)
+            bot3.kinematic_model(0, 0) # stop robot
             # print "final grid point (x,y) : ",bot3.state[1]/end_y,bot3.state[0]/end_x
             call = 1
             plt.figure(1)
@@ -120,7 +128,7 @@ def traj_gen(path_x,path_y):
             plt.show()
             break
 
-        elif call == 0 :
+        elif call == 0 : # why call??? remove call var if unnecessary
             print "Y error",(path_y[-1]*end_y - bot3.state[1])
             print "X error",(path_x[-1]*end_x - bot3.state[0])
             error_theta = math.atan2(math.sin(math.pi*(bot3.state[2]-destination_theta)/180),math.cos(math.pi*(bot3.state[2]-destination_theta)/180))
@@ -131,11 +139,11 @@ def traj_gen(path_x,path_y):
             # print i
             x_actual[i] = bot3.state[0]
             y_actual[i] = bot3.state[1]
-            error_x = float(x[i]*end_x - bot3.state[0])#end_x and end_y are multiplied to find the coordinate wrt the image. x,y give the grid coordinates
-            error_y = float(y[i]*end_y - bot3.state[1])
+            error_x = float(x[i]*end_x - bot3.state[0])    #end_x and end_y are multiplied to find the coordinate of robot wrt the image (to get image pixel values of robot)
+            error_y = float(y[i]*end_y - bot3.state[1])    #x,y give the grid coordinates
             print "destination_theta : ",destination_theta,"bot3.state[2] : ",bot3.state[2], "theta error ",error_theta
 
-            if i==0 :
+            if i==0 : # initial value was always erroneous, so default error was assigned. Remove if unnecessary
                 error_x = 0
                 error_y = 0
                 error_theta = 0

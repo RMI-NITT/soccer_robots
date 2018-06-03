@@ -5,18 +5,25 @@ import math
 import time
 from copy import deepcopy
 
-FULL_WIDTH = 1920
-FULL_HEIGHT = 1080
+FULL_WIDTH = 1920    #actual size of image
+FULL_HEIGHT = 1080   #actual size of image
 
-FINAL_WIDTH  = 1100
-FINAL_HEIGHT = 620
+FINAL_WIDTH  = 1100  #final size
+FINAL_HEIGHT = 620   #final size
 
+
+"""
+For perspective transform
+
+"""
 LEFT_TOP = [165,5]#[148,12]
 RIGHT_TOP = [1800,13]#[1571,22]
 RIGHT_BOTTOM = [1815,960]#[1583,830]
 LEFT_BOTTOM = [200,1037]#[171,900]
-mat_size_1 = 14
-mat_size_2 = 21
+
+
+mat_size_1 = 14  # size of the grid matrix
+mat_size_2 = 21  # size of the grid matrix
 MAT = np.array((mat_size_1, mat_size_2), dtype=np.uint64)
 class IP(object):
 
@@ -68,8 +75,6 @@ class IP(object):
         return cv2.moments(contour)
 
     def crop_image(self,image,center,amount):
-        #print int(center[1])-amount,int(center[0])-amount
-        #print int(center[1])+amount,int(center[0])+amount
         if int(center[1])-amount >= 0 and int(center[0])-amount >= 0:
             if int(center[1])+amount <= FINAL_HEIGHT and int(center[0])+amount <= FINAL_WIDTH:
                 img = image[(int(center[1])-amount):(int(center[1])+amount),(int(center[0])-amount):(int(center[0])+amount)]
@@ -87,42 +92,38 @@ class IP(object):
         cv2.destroyAllWindows()
 
     def draw_grid(self,im2,x_grid_num,y_grid_num):
-	#ret,frame = self.cap.read()
-	row = [0 for i in range(18)]
-	mat = np.zeros((mat_size_1, mat_size_2), dtype=np.uint64)
-	#for i in range(12):
-	#	mat.append([])
-        X = im2.shape[1]
-	Y = im2.shape[0]
-	start_x = 0
-	start_y = 0
-	end_x = X/mat_size_2
-	end_y = Y/mat_size_1
+        '''
+        this function is to draw rectangular grid on the soccer arena to get discrete states for the A* search algo
+        size of one rectangle is mat_size_1 x mat_size_2
+        x_grid_num and y_grid_num are the location(coordinates) of the centre of the obstacle in the grid.
+        '''
 
-	for i in range(mat_size_2):
-		for j in range(mat_size_1):
-			if i not in range(x_grid_num-2, x_grid_num+3) or j not in range(y_grid_num-2, y_grid_num+3) :
-	   			im2 = cv2.rectangle(im2,(start_x+(X/mat_size_2)*i,start_y+(Y/mat_size_1)*j),(end_x+(X/mat_size_2)*i,end_y+(Y/mat_size_1)*j),(0,0,255))
-				mat[j][i] = 0
-			else :
-	   			im2 = cv2.rectangle(im2,(start_x+(X/mat_size_2)*i,start_y+(Y/mat_size_1)*j),(end_x+(X/mat_size_2)*i,end_y+(Y/mat_size_1)*j),(0,0,255),-1)
-				mat[j][i] = 1
-				#print "HI", mat[j][i]
-	'''
-	print "Printing mat..."
-	for i in range(12):
-		s = ""
-		for j in range(18):
-			s += str(mat[i][j]) + " "
-		print s
-	'''
-	MAT = np.copy(mat)
-	#print "MAT.shape", MAT.shape
-	return im2,MAT
-    '''
-    def point_polygon_test(self,contour,pt,measureDist):
-	return cv2.pointPolygonTest(contour, pt, measureDist)
-    '''
+    	row = [0 for i in range(18)]
+    	mat = np.zeros((mat_size_1, mat_size_2), dtype=np.uint64)
+        X = im2.shape[1]        # size of the image obtained from the camera
+        Y = im2.shape[0]        # size of the image obtained from the camera
+    	start_x = 0             # start coordinate in the grid
+    	start_y = 0             # start coordinate in the grid
+    	end_x = X/mat_size_2    # end coordinate in the grid
+    	end_y = Y/mat_size_1    # end coordinate in the grid
+        """
+        For some rect. blocks around the obstacle we draw color filled rectangles and update the corresponding locations in the matrix as 1.
+        And for locations without obstacles unfilled rectangles are drawn and the matrix is updated as 0.
+        """
+    	for i in range(mat_size_2):
+    		for j in range(mat_size_1):
+    			if i not in range(x_grid_num-2, x_grid_num+3) or j not in range(y_grid_num-2, y_grid_num+3) :
+    	   			im2 = cv2.rectangle(im2,(start_x+(X/mat_size_2)*i,start_y+(Y/mat_size_1)*j),(end_x+(X/mat_size_2)*i,end_y+(Y/mat_size_1)*j),(0,0,255))
+    				mat[j][i] = 0
+    			else :
+    	   			im2 = cv2.rectangle(im2,(start_x+(X/mat_size_2)*i,start_y+(Y/mat_size_1)*j),(end_x+(X/mat_size_2)*i,end_y+(Y/mat_size_1)*j),(0,0,255),-1) 
+    				mat[j][i] = 1
+    				#print "HI", mat[j][i]
+    	
+    	MAT = np.copy(mat)  #dont remember why we copied the matrix
+    	
+    	return im2,MAT
+    
 class detectRobot(IP):
 
     def __init__(self):
